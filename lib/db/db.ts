@@ -9,12 +9,20 @@ export async function connectDB() {
     return
   }
 
-  const { MONGODB_URI } = process.env
-  if (!MONGODB_URI) {
-    throw new Error('MONGODB_URI must be defined')
+  const { PRODUCTION } = process.env
+  let mongoURI: string | undefined
+
+  if (PRODUCTION === 'true') {
+    mongoURI = process.env.MONGODB_LOCAL_URI
+  } else {
+    mongoURI = process.env.MONGODB_ATLAS_URI
   }
 
-  const db = await connect(MONGODB_URI)
+  if (!mongoURI) {
+    throw new Error('MongoDB URI must be defined')
+  }
+
+  const db = await connect(mongoURI)
   conn.isConnected = db.connections[0].readyState === 1 ? true : false
   console.log(`Database name: ${db.connection.db.databaseName}`)
 }
